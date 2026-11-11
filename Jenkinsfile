@@ -1,36 +1,43 @@
+
 pipeline {
+
     agent any
-    
-    
-    tools{
-		jdk 'JDK 25'
-		maven 'Maven-3.10'
-	}
+
+    tools {
+        jdk 'JDK 25'
+        maven 'Maven-3.10'
+    }
 
     stages {
+
         stage('SCM Synchronization') {
             steps {
-                echo '📥 Pulling latest code changes from Git repository...'
+                echo 'Pulling latest code changes from Git repository...'
                 checkout scm
             }
         }
 
         stage('Static Verification') {
             steps {
-                echo '🔍 Checking Maven project layout rules...'
+                echo 'Checking Maven project layout rules...'
                 bat 'mvn validate'
             }
         }
 
         stage('Compilation & Automated Testing') {
             steps {
-                echo '⚙️ Compiling class layers and verifying test logic stability...'
+                echo 'Compiling and running automated tests...'
                 bat 'mvn clean package'
             }
+
             post {
                 always {
-                    echo '📊 Publishing Unit Test trends to Jenkins Dashboard...'
-                    junit '**/target/surefire-reports/*.xml'
+                    echo 'Publishing Unit Test trends to Jenkins Dashboard...'
+
+                    junit(
+                        testResults: '**/target/surefire-reports/*.xml',
+                        allowEmptyResults: true
+                    )
                 }
             }
         }
@@ -38,10 +45,11 @@ pipeline {
 
     post {
         success {
-            echo '✅ CI Pipeline completed flawlessly! Code stability confirmed.'
+            echo 'CI Pipeline completed successfully!'
         }
+
         failure {
-            echo '❌ CI Pipeline broken. Check console logs for build failures or breaking test regressions.'
+            echo 'CI Pipeline failed. Check console logs.'
         }
     }
 }
